@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EGERAK — KEBERADAAN PEGAWAI • PPD KOTA MARUDU</title>
+<meta name="description" content="Paparan langsung keberadaan Kakitangan Sektor Pengurusan Sekolah PPD Kota Marudu untuk TV." />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+  --bg:#0b1020; --card:#121939; --muted:#1a224a; --text:#e8ecff; --text-dim:#b8c0ff;
+  --ok:#10b981; --away:#f59e0b; --meet:#3b82f6; --off:#ef4444; --travel:#8b5cf6;
+}
+html, body { height:100%; margin:0; padding:0; font-size:20px; }
+body { display:flex; flex-direction:column; min-height:100vh; background:var(--bg); color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+.glass{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); backdrop-filter: blur(6px); border:1px solid rgba(255,255,255,0.04)}
+.shadow-soft{box-shadow:0 8px 24px rgba(2,6,23,.6)}
+.ticker-mask{mask-image:linear-gradient(180deg, transparent 0, #000 60px, #000 calc(100% - 60px), transparent 100%)}
+.small-muted{color:var(--text-dim);font-size:14px}
+a.link{color:var(--text-dim);text-decoration:underline}
+.badge {font-size:12px;padding:4px 8px;border-radius:999px;}
+#list-viewport{height:calc(100vh - 280px); overflow:hidden;}
+</style>
+</head>
+<body>
+<div class="min-h-screen flex flex-col items-center py-4">
+  <div class="w-full px-4 max-w-7xl">
+    <!-- Header -->
+    <header class="glass shadow-soft rounded-2xl p-4 mb-4 flex items-center gap-4">
+      <img id="logo-left" src="https://i.imgur.com/4EGUuTx.png" alt="Logo Kiri" class="h-40 w-40 object-contain"/>
+      <div class="flex-1">
+        <div class="flex items-center gap-3">
+          <div class="relative inline-flex items-center justify-center">
+            <span class="absolute inline-flex h-3 w-3 rounded-full bg-[var(--ok)] animate-pulse -top-1 -right-1"></span>
+            <span class="h-3 w-3 rounded-full bg-[var(--ok)]"></span>
+          </div>
+          <div>
+            <h1 class="text-2xl md:text-3xl font-semibold tracking-wide uppercase" style="color:#10b981;">
+              EGERAK — KEBERADAAN PEGAWAI
+            </h1>
+            <div class="small-muted">Sektor Pengurusan Sekolah • PPD Kota Marudu</div>
+          </div>
+        </div>
+      </div>
+      <div class="text-right">
+        <div id="clock" class="font-mono text-lg md:text-xl"></div>
+        <div id="updated" class="small-muted">—</div>
+      </div>
+      <img id="logo-right" src="https://i.imgur.com/4EGUuTx.png" alt="Logo Kanan" class="h-40 w-40 object-contain"/>
+    </header>
+
+    <!-- ALERT -->
+    <div id="alert" class="glass rounded-lg p-3 mb-4 border-l-4 border-yellow-400 text-sm hidden">
+      <strong id="alert-title" class="font-semibold">Amaran:</strong>
+      <div id="alert-text" class="text-sm mt-1"></div>
+    </div>
+
+    <!-- Main -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- List -->
+      <section class="lg:col-span-2 glass rounded-2xl p-4 shadow-soft">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-xl font-semibold tracking-wide">Senarai Pegawai</h2>
+          <div class="flex items-center gap-3 text-sm small-muted">
+            <div class="inline-flex items-center gap-1"><span class="h-3 w-3 rounded-full bg-[var(--ok)]"></span>Hadir</div>
+            <div class="inline-flex items-center gap-1"><span class="h-3 w-3 rounded-full bg-[var(--meet)]"></span>Mesyuarat</div>
+            <div class="inline-flex items-center gap-1"><span class="h-3 w-3 rounded-full bg-[var(--away)]"></span>Tugasan Luar</div>
+            <div class="inline-flex items-center gap-1"><span class="h-3 w-3 rounded-full bg-[var(--travel)]"></span>Outstation</div>
+            <div class="inline-flex items-center gap-1"><span class="h-3 w-3 rounded-full bg-[var(--off)]"></span>Cuti/Tiada</div>
+          </div>
+        </div>
+        <div id="list-viewport" class="relative overflow-hidden ticker-mask">
+          <div id="list-track" class="space-y-2 pb-10"></div>
+        </div>
+      </section>
+
+      <!-- Stats & Chart -->
+      <aside class="glass rounded-2xl p-4 shadow-soft">
+        <h2 class="text-xl font-semibold tracking-wide mb-3">Statistik Hari Ini</h2>
+        <div class="grid grid-cols-3 gap-3 mb-4" id="stat-pills"></div>
+        <div class="h-64 bg-[var(--card)] rounded-xl p-3">
+          <canvas id="chart" height="240"></canvas>
+        </div>
+        <div class="mt-4 text-xs small-muted space-y-1">
+          <div>Ditapis kepada: <strong>Sektor Pengurusan Sekolah</strong></div>
+          <div>Sumber data: <span id="data-origin">—</span></div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="text-[12px] small-muted mt-6">Tip: Tekan <kbd>F11</kbd> untuk mod skrin penuh.</footer>
+  </div>
+</div>
+
+<script>
+// CONFIG
+const CONFIG = {
+  DATA_URL: "https://script.google.com/macros/s/AKfycby7QUw9sE1FnvuPMmWOaMsj8ATCkdScUh7ml-3xUySSRy_1ksyRbNfKAzcQuDQ618w-/exec",
+  REFRESH_MS: 60000,
+  SCROLL_SPEED: 0.5,
+  TARGET_SEKTOR: "Sektor Pengurusan Sekolah",
+  MAP: {
+    nama: ["Nama","name","nama","full name","pegawai"],
+    jawatan: ["Jawatan","jawatan","position","fungsi"],
+    unit: ["Sektor","Unit","unit","sektor","bahagian"],
+    status: ["Status","status","kehadiran","attendance"],
+    masa: ["Masa","Timestamp","updatedAt","masa","waktu","time"],
+    foto: ["Foto","Gambar","photo","image","foto"]
+  }
+};
+
+// DOM
+const alertEl = document.getElementById('alert');
+const alertTextEl = document.getElementById('alert-text');
+const alertTitleEl = document.getElementById('alert-title');
+const dataOriginEl = document.getElementById('data-origin');
+const updatedEl = document.getElementById('updated');
+const clockEl = document.getElementById('clock');
+const listTrack = document.getElementById('list-track');
+const viewport = document.getElementById('list-viewport');
+const statPills = document.getElementById('stat-pills');
+const chartCanvas = document.getElementById('chart');
+
+setInterval(()=>{ clockEl.textContent = new Date().toLocaleString('ms-MY', { hour12:false, weekday:'short', day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' }); },1000);
+
+// UTIL
+function showAlert(title,text){ alertTitleEl.textContent=title; alertTextEl.textContent=text; alertEl.classList.remove('hidden'); }
+function hideAlert(){ alertEl.classList.add('hidden'); }
+function timeoutFetch(url,ms=15000){ const ctrl=new AbortController(); const id=setTimeout(()=>ctrl.abort(),ms); return fetch(url,{signal:ctrl.signal,cache:'no-store'}).finally(()=>clearTimeout(id)); }
+async function fetchJSON(url){ try{ const res=await timeoutFetch(url); if(!res.ok) throw new Error(res.status); const txt=await res.text(); return JSON.parse(txt); }catch(e){ throw e; } }
+function coerceArray(payload){ if(!payload) return []; if(Array.isArray(payload)){ if(payload.length===0) return []; if(typeof payload[0]==='object') return payload; if(Array.isArray(payload[0])){ const headers=payload[0]; return payload.slice(1).map(r=>{ const obj={}; for(let i=0;i<headers.length;i++) obj[headers[i]??i]=r[i]; return obj; }); } } if(payload.values&&Array.isArray(payload.values)){ const headers=payload.values[0]||[]; return (payload.values.slice(1)||[]).map(r=>{ const obj={}; for(let i=0;i<headers.length;i++) obj[headers[i]??i]=r[i]; return obj; }); } return []; }
+function findValue(obj,candidates){ if(!obj) return undefined; const keys=Object.keys(obj); const norm=candidates.map(s=>(''+s).toLowerCase().trim()); for(const k of keys){ const kl=k.toLowerCase().trim(); if(norm.includes(kl)) return obj[k]; } return undefined; }
+function normalizeRow(r){ return { nama:String(findValue(r,CONFIG.MAP.nama)||'').trim(), jawatan:String(findValue(r,CONFIG.MAP.jawatan)||'').trim(), unit:String(findValue(r,CONFIG.MAP.unit)||'').trim(), status:String(findValue(r,CONFIG.MAP.status)||'').trim(), masa:String(findValue(r,CONFIG.MAP.masa)||'').trim(), foto:String(findValue(r,CONFIG.MAP.foto)||'').trim() }; }
+function normalStatus(s){ if(!s) return 'Cuti/Tiada'; s=(''+s).toLowerCase(); if(/(hadir|in office|onsite)/.test(s)) return 'Hadir'; if(/(mesyuarat|meeting)/.test(s)) return 'Mesyuarat'; if(/(tugasan luar|urusan luar|errand|outside)/.test(s)) return 'Tugasan Luar'; if(/(outstation|kursus|lawatan)/.test(s)) return 'Outstation'; if(/(cuti|mc|tidak hadir|absent)/.test(s)) return 'Cuti/Tiada'; return s.replace(/\b\w/g,c=>c.toUpperCase()); }
+function statusColor(s){ return ({'Hadir':'var(--ok)','Mesyuarat':'var(--meet)','Tugasan Luar':'var(--away)','Outstation':'var(--travel)','Cuti/Tiada':'var(--off)'}[s])||'var(--muted)'; }
+
+// Demo fallback
+function demoData(){ const now=new Date(); const ts=now.toISOString().slice(0,19).replace('T',' '); return [ {Nama:'Nurul Aisyah',Jawatan:'PPD',Sektor:'Sektor Pengurusan Sekolah',Status:'Hadir',Masa:ts}, {Nama:'Mohd Faiz',Jawatan:'Pen PPD',Sektor:'Sektor Pengurusan Sekolah',Status:'Mesyuarat',Masa:ts}, {Nama:'Joanne Lee',Jawatan:'Pembantu Tadbir',Sektor:'Sektor Pengurusan Sekolah',Status:'Tugasan Luar',Masa:ts}, {Nama:'Siti Rahmah',Jawatan:'Pegawai Meja',Sektor:'Sektor Pengurusan Sekolah',Status:'Outstation',Masa:ts}, {Nama:'Danny Fred',Jawatan:'Pemandu',Sektor:'Sektor Pengurusan Sekolah',Status:'Cuti',Masa:ts} ]; }
+
+// FETCH & RENDER
+let chart=null,animId=null,scrollY=0;
+async function loadData(){
+  hideAlert();
+  let raw=null,origin='Demo';
+  try{ raw=coerceArray(await fetchJSON(CONFIG.DATA_URL)); origin=(new URL(CONFIG.DATA_URL)).host; }catch(e){ showAlert('Gagal muat data','Gunakan demo fallback.'); raw=demoData(); }
+  const mapped=raw.map(normalizeRow).filter(r=>r.unit.toLowerCase().includes(CONFIG.TARGET_SEKTOR.toLowerCase()));
+  renderList(mapped);
+  renderStats(mapped);
+  renderChart(mapped);
+  dataOriginEl.textContent=origin;
+  updatedEl.textContent='Kemaskini: '+new Date().toLocaleString('ms-MY',{hour12:false});
+}
+
+// LIST + AUTOSCROLL
+function staffCard(p){
+  const col=statusColor(p.status); // dapatkan warna ikut status
+  const img=p.foto
+    ? `<img src="${p.foto}" class="h-12 w-12 rounded-xl object-cover border border-white/10" alt="${p.nama}">`
+    : `<div class="h-12 w-12 rounded-xl bg-[var(--muted)] grid place-items-center text-xs">No Img</div>`;
+
+  return `
+  <div class="glass rounded-xl p-3 flex items-center justify-between" style="border-left:6px solid ${col}; background:${col}10;">
+    <div class="flex items-center gap-3 min-w-0">
+      ${img}
+      <div class="min-w-0">
+        <div class="truncate font-medium">${p.nama}</div>
+        <div class="text-[12px] small-muted truncate">${p.jawatan} • ${p.unit}</div>
+      </div>
+    </div>
+    <span class="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-full" style="background:${col}20;border:1px solid ${col}40;color:${col};">
+      <span class="h-2 w-2 rounded-full" style="background:${col}"></span>${normalStatus(p.status)}
+    </span>
+  </div>
+  `;
+}
+function renderList(arr){
+  cancelAnimationFrame(animId); scrollY=0; listTrack.style.transform='translateY(0px)'; listTrack.innerHTML=arr.map(staffCard).join('')||"<div class='text-sm small-muted'>Tiada rekod.</div>";
+  // clone for seamless
+  const clone=document.createElement('div'); clone.innerHTML=listTrack.innerHTML; Array.from(clone.children).forEach(ch=>listTrack.appendChild(ch.cloneNode(true)));
+  startScroll();
+}
+function step(){ const trackH=listTrack.scrollHeight; const viewH=viewport.clientHeight; if(trackH<=viewH){ animId=requestAnimationFrame(step); return; } scrollY+=CONFIG.SCROLL_SPEED; if(scrollY>=(trackH/2)) scrollY=0; listTrack.style.transform=`translateY(-${scrollY}px)`; animId=requestAnimationFrame(step); }
+function startScroll(){ cancelAnimationFrame(animId); animId=requestAnimationFrame(step); }
+function stopScroll(){ cancelAnimationFrame(animId); }
+viewport.addEventListener('mouseenter',stopScroll); viewport.addEventListener('mouseleave',startScroll);
+
+// STATS + CHART
+function renderStats(arr){
+  const counts={'Hadir':0,'Mesyuarat':0,'Tugasan Luar':0,'Outstation':0,'Cuti/Tiada':0};
+  arr.forEach(r=>counts[normalStatus(r.status)]++);
+  statPills.innerHTML=Object.entries(counts).map(([k,v])=>{ const col=statusColor(k); return `<div class="glass rounded-xl p-2 text-center"><div class="text-[10px] mb-1" style="color:${col}">${k}</div><div class="text-2xl font-semibold">${v}</div></div>`; }).join('');
+}
+function renderChart(arr){
+  const labels=['Hadir','Mesyuarat','Tugasan Luar','Outstation','Cuti/Tiada'];
+  const counts=labels.map(l=>arr.filter(r=>normalStatus(r.status)===l).length);
+  const total=counts.reduce((a,b)=>a+b,0);
+  const dataPct=counts.map(c=>total?Math.round(c/total*100):0);
+  const ctx=chartCanvas.getContext('2d');
+  const colors=[getComputedStyle(document.documentElement).getPropertyValue('--ok'),getComputedStyle(document.documentElement).getPropertyValue('--meet'),getComputedStyle(document.documentElement).getPropertyValue('--away'),getComputedStyle(document.documentElement).getPropertyValue('--travel'),getComputedStyle(document.documentElement).getPropertyValue('--off')];
+  if(chart) chart.destroy();
+  chart=new Chart(ctx,{type:'doughnut',data:{labels:labels,datasets:[{data:dataPct,backgroundColor:colors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#cfd7ff'}},tooltip:{callbacks:{label:function(ctx){return ctx.label+': '+ctx.raw+'%';}}}}}});
+}
+
+// INIT 
+loadData();
+setInterval(loadData,CONFIG.REFRESH_MS);
+</script>
+</body>
+</html>
