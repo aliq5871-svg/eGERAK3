@@ -96,6 +96,11 @@ a.link{color:var(--text-dim);text-decoration:underline}
 
     </div>
   </div>
+
+  <!-- Jam & Tarikh di bawah sisi kanan -->
+  <div class="flex flex-col items-end justify-end h-full">
+    <div id="clock" class="font-mono text-lg md:text-xl"></div>
+    <div id="updated" class="small-muted">—</div>
   </div>
 <!-- Jam & Tarikh + Live Indicator -->
 <div class="flex flex-col items-end justify-end h-full">
@@ -369,8 +374,6 @@ setInterval(loadData,CONFIG.REFRESH_MS);
 </script>
 </body>
 </html>
-
-
 
 
 
