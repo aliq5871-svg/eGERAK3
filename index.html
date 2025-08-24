@@ -266,7 +266,7 @@ function renderChart(arr){
     getComputedStyle(document.documentElement).getPropertyValue('--away'),
     getComputedStyle(document.documentElement).getPropertyValue('--travel'),
     getComputedStyle(document.documentElement).getPropertyValue('--off'),
-    getComputedStyle(document.documentElement).getPropertyValue('--away') // keluar Waktu pejabat
+    getComputedStyle(document.documentElement).getPropertyValue('--Out') // keluar Waktu pejabat
   ];
 
   if(chart) chart.destroy();
@@ -299,6 +299,7 @@ setInterval(loadData,CONFIG.REFRESH_MS);
 </script>
 </body>
 </html>
+
 
 
 
