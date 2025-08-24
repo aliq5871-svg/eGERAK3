@@ -177,7 +177,7 @@ function normalStatus(s){
   if(/(tugasan luar|urusan luar|errand|outside)/.test(s)) return 'Tugasan Luar';
   if(/(outstation|kursus|lawatan)/.test(s)) return 'Kursus/Lawatan';
   if(/(cuti|mc|tidak hadir|absent)/.test(s)) return 'Cuti/Tiada';
-  if(/(keluar masa pejabat|off duty|after office)/.test(s)) return 'Keluar Waktu Pejabat';
+  if(/(keluar Waktu pejabat|off duty|after office)/.test(s)) return 'Keluar Waktu Pejabat';
   return s.replace(/\b\w/g,c=>c.toUpperCase());
 }
 function statusColor(s){
@@ -243,7 +243,7 @@ viewport.addEventListener('mouseenter',stopScroll); viewport.addEventListener('m
 
 // STATS + CHART
 function renderStats(arr){
-  const counts={'Hadir/Ada':0,'Mesyuarat':0,'Tugasan Luar':0,'Kursus/Lawatan':0,'Cuti/Tiada':0,'Keluar Masa Pejabat':0};
+  const counts={'Hadir/Ada':0,'Mesyuarat':0,'Tugasan Luar':0,'Kursus/Lawatan':0,'Cuti/Tiada':0,'Keluar Waktu Pejabat':0};
   arr.forEach(r=>counts[normalStatus(r.status)]++);
   statPills.innerHTML=Object.entries(counts).map(([k,v])=>{
     const col=statusColor(k);
@@ -254,7 +254,7 @@ function renderStats(arr){
   }).join('');
 }
 function renderChart(arr){
-  const labels = ['Hadir/Ada','Mesyuarat','Tugasan Luar','Kursus/Lawatan','Cuti/Tiada','Keluar Masa Pejabat'];
+  const labels = ['Hadir/Ada','Mesyuarat','Tugasan Luar','Kursus/Lawatan','Cuti/Tiada','Keluar Waktu Pejabat'];
   const counts = labels.map(l=>arr.filter(r=>normalStatus(r.status)===l).length);
   const total = counts.reduce((a,b)=>a+b,0);
   const dataPct = counts.map(c=>total?Math.round(c/total*100):0);
@@ -266,7 +266,7 @@ function renderChart(arr){
     getComputedStyle(document.documentElement).getPropertyValue('--away'),
     getComputedStyle(document.documentElement).getPropertyValue('--travel'),
     getComputedStyle(document.documentElement).getPropertyValue('--off'),
-    getComputedStyle(document.documentElement).getPropertyValue('--away') // keluar masa pejabat
+    getComputedStyle(document.documentElement).getPropertyValue('--away') // keluar Waktu pejabat
   ];
 
   if(chart) chart.destroy();
@@ -299,6 +299,7 @@ setInterval(loadData,CONFIG.REFRESH_MS);
 </script>
 </body>
 </html>
+
 
 
 
