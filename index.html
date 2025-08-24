@@ -177,7 +177,7 @@ function normalStatus(s){
   if(/(tugasan luar|urusan luar|errand|outside)/.test(s)) return 'Tugasan Luar';
   if(/(outstation|kursus|lawatan)/.test(s)) return 'Kursus/Lawatan';
   if(/(cuti|mc|tidak hadir|absent)/.test(s)) return 'Cuti/Tiada';
-  if(/(keluar masa pejabat|off duty|after office)/.test(s)) return 'Keluar Masa Pejabat';
+  if(/(keluar masa pejabat|off duty|after office)/.test(s)) return 'Keluar Waktu Pejabat';
   return s.replace(/\b\w/g,c=>c.toUpperCase());
 }
 function statusColor(s){
@@ -187,7 +187,7 @@ function statusColor(s){
     'Tugasan Luar':'var(--away)',
     'Kursus/Lawatan':'var(--travel)',
     'Cuti/Tiada':'var(--off)',
-    'Keluar Masa Pejabat':'var(--out)'
+    'Keluar Waktu Pejabat':'var(--out)'
   }[s])||'var(--muted)';
 }
 
@@ -299,6 +299,7 @@ setInterval(loadData,CONFIG.REFRESH_MS);
 </script>
 </body>
 </html>
+
 
 
 
