@@ -43,15 +43,22 @@ body { display:flex; flex-direction:column; min-height:100vh; background:var(--b
 a.link{color:var(--text-dim);text-decoration:underline}
 .badge {font-size:12px;padding:4px 8px;border-radius:999px;}
 #list-viewport{height:calc(100vh - 280px); overflow:hidden;}
-  * Animasi marquee */
+ /* Animasi marquee */
 @keyframes marquee {
   0%   { transform: translateX(100%); }
   100% { transform: translateX(-100%); }
 }
+
 #marquee-text {
-  animation: marquee 15s linear infinite;
+  animation: marquee 15s linear infinite, glow 2s ease-in-out infinite alternate;
   white-space: nowrap;
   overflow: hidden;
+  color: #facc15;
+}
+
+@keyframes glow {
+  from { text-shadow: 0 0 5px #facc15, 0 0 10px #facc15, 0 0 20px #facc15; }
+  to   { text-shadow: 0 0 10px #fde047, 0 0 20px #fde047, 0 0 30px #fde047; }
 }
 </style>
 </head>
@@ -312,6 +319,7 @@ setInterval(loadData,CONFIG.REFRESH_MS);
 </script>
 </body>
 </html>
+
 
 
 
