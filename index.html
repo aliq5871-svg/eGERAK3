@@ -463,42 +463,24 @@ updateDate();
 loadData();
 setInterval(loadData,CONFIG.REFRESH_MS);
 </script>
+<!-- ===== LATAR MUZIK ===== -->
+<audio id="bg-music" loop autoplay muted>
+  <!-- Ganti URL ini dengan fail muzik anda (mp3) -->
+  <source src="https://www.bensound.com/bensound-music/bensound-acousticbreeze.mp3" type="audio/mpeg">
+  Browser anda tidak sokong audio.
+</audio>
+
+<script>
+// Aktifkan bunyi selepas user klik skrin sekali
+document.addEventListener("click", () => {
+  const audio = document.getElementById("bg-music");
+  if (audio.muted) {
+    audio.muted = false;
+    audio.play().catch(e => console.log("Autoplay block:", e));
+  }
+});
+</script>
+
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
